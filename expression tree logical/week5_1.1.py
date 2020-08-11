@@ -85,6 +85,14 @@ class Tree():
                 return 1 + self.right.getHeight()
             else :
                 return 1
+        def isLeaf(self):
+            if self.left == None and self.right == None:
+                return True
+            return False
+        def isNot(self):
+            if self.data == '!':
+                return True
+            return False
     def __init__(self,postfix_list):
         self.postfix_list = postfix_list
         self.root = None
@@ -113,49 +121,80 @@ class Draw():
         self.root = Tree(Operator(equation).get()).insert()
         self.high = self.root[0].getHeight()
         self.pygame.init()
-        self.scr_w,self.scr_h = 800,600
+        self.scr_w,self.scr_h = 1500,960
         self.screen  = self.pygame.display.set_mode((self.scr_w, self.scr_h))
-        self.text_font = self.pygame.font.SysFont("leelawadeeui", 48)
+        self.text_font = self.pygame.font.SysFont("leelawadeeui", 30)
         self.clock = self.pygame.time.Clock()
 
         self.is_running = True
-    def recursive(self,root,low,high,pos):
-        NODE_OFFSET_X = 30
-        NODE_OFFSET_Y = 60
-        NODE_RAD = 20
-        low += 1
-        if low == high and root != None:
-            label = self.text_font.render(root.data, 1, (0,0,0))
-            self.screen.blit(label, pos)
-            pass
-        elif root == None:
-            pass
-        elif low == 1:
-            label = self.text_font.render(root.data, 1, (0,0,0))
-            self.screen.blit(label, (self.scr_w/2,20))
+    def recursive(self, root, pos, parameter, create_root = False):
+        OFFSET_X,OFFSET_Y,RAD = parameter
+        x,y = pos
+        self.printText(root.data, pos)
+        self.printCircle(pos,RAD,root.isLeaf())
+        # self.pygame.draw.line(self.screen,(0,0,0),(400,0),(400,600))
+        if create_root == False:
             if root.data == '!':
-                return self.recursive(root.left,low,high,(self.scr_w/2, 20+NODE_OFFSET_Y+NODE_RAD))
+                self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x, y+OFFSET_Y),1)
+                return self.recursive(root.left, (x,y+OFFSET_Y), parameter)
+            elif root.left and root.right:
+                self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x-OFFSET_X, y+OFFSET_Y),1)
+                self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x+OFFSET_X, y+OFFSET_Y),1)
+                return self.recursive(root.left, (x-OFFSET_X,y+OFFSET_Y), parameter),self.recursive(root.right, (x+OFFSET_X,y+OFFSET_Y), parameter)
+            elif root.left:
+                self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x-OFFSET_X, y+OFFSET_Y),1)
+                return self.recursive(root.left, (x-OFFSET_X,y+OFFSET_Y), parameter)
+            elif root.right:
+                self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x+OFFSET_Y, y+OFFSET_Y),1)
+                return self.recursive(root.right, (x+OFFSET_X,y+OFFSET_Y), parameter)
             else:
-                return self.recursive(root.left,low,high,((self.scr_w/2)-NODE_OFFSET_X-((high-1)*NODE_RAD),20+NODE_OFFSET_Y+NODE_RAD)),\
-                    self.recursive(root.right,low,high,((self.scr_w/2)+NODE_OFFSET_X+((high-1)*NODE_RAD),20+NODE_OFFSET_Y+NODE_RAD))
+                pass
+    def printText(self,text,pos):
+        x,y = pos
+        x = int(x);y = int(y)
+        text = self.text_font.render(text, True, (0,0,0))
+        text_rect = text.get_rect(center=(x, y))
+        self.screen.blit(text, text_rect)
+
+    def printCircle(self,pos,rad,draw_rect = False):
+        x,y = pos
+        x = int(x);y = int(y)
+        if draw_rect == True:
+            rect =  self.pygame.draw.circle(self.screen,(255,255,255),(x,y),rad,1)
+            self.pygame.draw.rect(self.screen,(0,0,0),rect,1)
         else:
-            x,y = pos
-            label = self.text_font.render(root.data, 1, (0,0,0))
-            self.screen.blit(label, pos)
-            if root.data == '!':
-                return self.recursive(root.left,low,high,(x, y+NODE_OFFSET_Y+NODE_RAD))
-            else:
-                if root.left and root.right:
-                    return self.recursive(root.left,low,high,(x-NODE_OFFSET_X-NODE_RAD, y+NODE_OFFSET_Y+NODE_RAD)),\
-                    self.recursive(root.right,low,high,(x+NODE_OFFSET_X+NODE_RAD, y+NODE_OFFSET_Y+NODE_RAD))
-                elif root.left:
-                    return self.recursive(root.left,low,high,(x-NODE_OFFSET_X-NODE_RAD, y+NODE_OFFSET_Y+NODE_RAD))
-                elif root.right:
-                    return self.recursive(root.right,low,high,(x+NODE_OFFSET_X+NODE_RAD, y+NODE_OFFSET_Y+NODE_RAD))
-      
+            self.pygame.draw.circle(self.screen,(0,0,0),(x,y),rad,1)
+        
+
     def draw(self):
+        OFFSET_X = 80
+        OFFSET_Y = 70
+        RAD = 20
+        OFFSET_2 = 200
         root = self.root[0]
-        self.recursive(root,0,self.high,1)
+        pos = (self.scr_w/2,20)
+        x,y = pos
+        child_offset = (self.high-1)*RAD
+
+        parameter = (OFFSET_X, OFFSET_Y, RAD)
+
+        #Crate Root
+        self.recursive(root,pos,parameter,True)
+        #Create Child
+        if root.left and root.right:
+            self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x-child_offset-OFFSET_2, y+OFFSET_Y),1)
+            self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x+child_offset+OFFSET_2, y+OFFSET_Y),1)
+            return self.recursive(root.left, (x-child_offset-OFFSET_2, y+OFFSET_Y), parameter), self.recursive(root.right, (x+child_offset+OFFSET_2, y+OFFSET_Y), parameter)
+        elif root.left:
+            self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x-child_offset-OFFSET_2, y+OFFSET_Y),1)
+            return self.recursive(root.left, (x-child_offset-OFFSET_2, y+OFFSET_Y), parameter)
+        elif root.right:
+            self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x+child_offset+OFFSET_2, y+OFFSET_Y),1)
+            return self.recursive(root.right, (x+child_offset+OFFSET_2, y+OFFSET_Y), parameter)
+        else:
+            pass
+
+        
     def loop(self):
         while self.is_running:
             for event in self.pygame.event.get():
@@ -168,7 +207,7 @@ class Draw():
             self.pygame.display.update()
             
 
-Draw("A+!B").loop()
+Draw("(A+B+E+!E+!A&(!A+B&!D))").loop()
 
 
 
