@@ -7,11 +7,11 @@ class Operator():
     def __to_posfix(self):
         mystack = Stack()
         prec = {'(':0, '!':1, '&':2, '+':3}
-        operator_list = ['(','!','&','+',')']
-        tokenList = self.express
+        operator_list = ['(', '!', '&', '+', ')']
+        token_list = self.express
         bracket_flag = False
         temp_char = ""
-        for token in tokenList:
+        for token in token_list:
             if token == " ":
                 continue
             if token not in operator_list:
@@ -30,10 +30,10 @@ class Operator():
                 elif token == '!':
                     mystack.push(token)
                 elif token == ')':
-                    topToken = mystack.pop()
-                    while topToken != '(':
-                        self.postfix.append(topToken)
-                        topToken = mystack.pop() 
+                    top_token = mystack.pop()
+                    while top_token != '(':
+                        self.postfix.append(top_token)
+                        top_token = mystack.pop() 
                     if bracket_flag == True and mystack.peek() == '!':
                         self.postfix.append(mystack.pop())
                         bracket_flag = False

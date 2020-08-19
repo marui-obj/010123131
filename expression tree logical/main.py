@@ -10,14 +10,14 @@ class Draw():
         self.screen  = self.pygame.display.set_mode((self.scr_w, self.scr_h))
         self.text_font = self.pygame.font.SysFont("leelawadeeui", 30)
         self.clock = self.pygame.time.Clock()
+        self.screen.fill((255,255,255))
 
         self.is_running = True
     def recursive(self, root, pos, parameter, create_root = False):
         OFFSET_X,OFFSET_Y,RAD = parameter
         x,y = pos
-        self.printText(root.data, pos)
         self.printCircle(pos,RAD,root.isLeaf())
-        # self.pygame.draw.line(self.screen,(0,0,0),(400,0),(400,600))
+        self.printText(root.data, pos)
         if create_root == False:
             if root.data == '!':
                 self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x, y+OFFSET_Y),1)
@@ -66,32 +66,45 @@ class Draw():
         #Crate Root
         self.recursive(root,pos,parameter,True)
         #Create Child
-        if root.left and root.right:
-            self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x-child_offset-OFFSET_2, y+OFFSET_Y),1)
-            self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x+child_offset+OFFSET_2, y+OFFSET_Y),1)
-            return self.recursive(root.left, (x-child_offset-OFFSET_2, y+OFFSET_Y), parameter), self.recursive(root.right, (x+child_offset+OFFSET_2, y+OFFSET_Y), parameter)
-        elif root.left:
-            self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x-child_offset-OFFSET_2, y+OFFSET_Y),1)
-            return self.recursive(root.left, (x-child_offset-OFFSET_2, y+OFFSET_Y), parameter)
-        elif root.right:
-            self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x+child_offset+OFFSET_2, y+OFFSET_Y),1)
-            return self.recursive(root.right, (x+child_offset+OFFSET_2, y+OFFSET_Y), parameter)
-        else:
-            pass
+        if root.data == '!':
+            self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x, y+OFFSET_Y),1)
+            return self.recursive(root.left, (x, y+OFFSET_Y), parameter)
+        else:           
+            if root.left and root.right:
+                self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x-child_offset-OFFSET_2, y+OFFSET_Y),1)
+                self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x+child_offset+OFFSET_2, y+OFFSET_Y),1)
+                return self.recursive(root.left, (x-child_offset-OFFSET_2, y+OFFSET_Y), parameter), self.recursive(root.right, (x+child_offset+OFFSET_2, y+OFFSET_Y), parameter)
+            elif root.left:
+                self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x-child_offset-OFFSET_2, y+OFFSET_Y),1)
+                return self.recursive(root.left, (x-child_offset-OFFSET_2, y+OFFSET_Y), parameter)
+            elif root.right:
+                self.pygame.draw.line(self.screen,(0,0,0),(x,y),(x+child_offset+OFFSET_2, y+OFFSET_Y),1)
+                return self.recursive(root.right, (x+child_offset+OFFSET_2, y+OFFSET_Y), parameter)
+            else:
+                pass
 
+    def getPhoto(self):
+        self.draw()
+        
+        text = self.text_font.render(self.equation, True, (0,0,0))
+        self.screen.blit(text, (0,self.scr_h-50))
+        
+        self.pygame.display.update()
+
+        self.pygame.image.save(self.screen, "Python\\Lab_Software\\expression tree logical\\screenshot\\screenshot.jpeg")
         
     def loop(self):
         while self.is_running:
             for event in self.pygame.event.get():
                 if event.type == self.pygame.QUIT:
                     self.is_running = False
-            self.clock.tick(60)
-            self.screen.fill((255,255,255))
             self.draw()
             self.pygame.display.update()
+        pygame.quit()
             
 if __name__ == "__main__":
-    Draw("(((I0&I1&!I2)+!I1)+I3)").loop()
+    x = Draw("!(1+0)")
+    x.getPhoto()
 
 
 
