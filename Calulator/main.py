@@ -1,5 +1,6 @@
 #! work in progress
 import PyQt5.QtWidgets as qtw
+import time
 
 class MainWindow(qtw.QWidget):
     def __init__(self):
@@ -9,40 +10,52 @@ class MainWindow(qtw.QWidget):
         self.temp_number = []
         self.keypad()
         self.show()
-    def stringNumber(self, character):
-        self.temp_number.append(character)
+    def keypadPress(self, key):
+        if key in "0123456789+-*/.":
+            self.temp_number.append(key)
+            self.text_field.setText(self.getEqn())
+        elif key is '=':
+            self.text_field.setText(self.getValue(self.getEqn()))
+        elif key is "Del":
+            if self.getEqn() != '':
+                self.temp_number.pop()
+                self.text_field.setText(self.getEqn())
+        elif key is "Clear":
+            self.temp_number = []
+            self.text_field.setText(self.getEqn())
+
+    def getEqn(self):
         return ''.join(self.temp_number)
+    def getValue(self, eqn):
+        try:
+            if self.getEqn() != '':
+                answer = eval(eqn)
+                return str(answer)
+        except:
+            print("ERROR")
+            return "ERROR"
+            
     def keypad(self):
         container = qtw.QWidget()
         container.setLayout(qtw.QGridLayout())
         
         self.text_field = qtw.QLineEdit()
         button_list = [
-                            ("Enter", (1, 0, 1, 2)),
-                            ("Clear", (1, 2, 1, 2)),
-                            ('7', (2, 0)),
-                            ('8', (2, 1)),
-                            ('9', (2, 2)),
-                            ('+', (2, 3)),
-                            ('4', (3, 0)),
-                            ('5', (3, 1)),
-                            ('6', (3, 2)),
-                            ('-', (3, 3)),
-                            ('1', (4, 0)),
-                            ('2', (4, 1)),
-                            ('3', (4, 2)),
-                            ('*', (4, 3)),
-                            ('0', (5, 0, 1, 3)),
-                            ('÷', (5, 3))
-                                                    ]
+                            #####                               Display                                      ####
+                            ('7', (1, 0)),      ('8', (1, 1)), ('9', (1, 2)),   ("Del", (1, 3)), ("Clear", (1, 4)),
+                            ('4', (2, 0)),      ('5', (2, 1)), ('6', (2, 2)),   ('*', (2, 3)),   ('/', (2, 4)),    
+                            ('1', (3, 0)),      ('2', (3, 1)), ('3', (3, 2)),   ('+', (3, 3)),   ('-', (3, 4)),    
+                            ('0', (4, 0, 1, 2)),               ('.', (4, 2)),   ('Ans', (4, 3)), ('=', (4, 4))     
+                            #====================================================================================#
+                                                                                                                    ]
         # Create text field 
-        from_row = 0; from_column = 0; row_span = 1; column_span = 4
+        from_row = 0; from_column = 0; row_span = 1; column_span = 5
         container.layout().addWidget(self.text_field, from_row, from_column, row_span, column_span)
         # Create button input   
         for button in button_list:
             text = button[0]
             parameter = button[1]
-            button_text = qtw.QPushButton(text, clicked = lambda: self.text_field.setText(self.stringNumber(text)))
+            button_text = qtw.QPushButton(text, clicked =(lambda f, t = text: self.keypadPress(t)) )
             # This use for handling function overloading
             if len(parameter) == 4:
                 p1, p2, p3, p4 = parameter
@@ -59,6 +72,6 @@ class MainWindow(qtw.QWidget):
     
                 
 app = qtw.QApplication([])
+app.setStyle('Oxygen')
 mw = MainWindow()
 app.exec_()
-
